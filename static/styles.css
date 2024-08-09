@@ -1,0 +1,116 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #0070ff;
+    color: white;
+}
+
+.logo {
+    height: 70px;
+}
+
+.battery-container {
+    display: flex;
+    align-items: center;
+}
+
+.battery-text {
+    margin-right: 10px;
+}
+
+.battery-bar {
+    width: 100px;
+    height: 25px;
+    border: 2px solid white;
+    position: relative;
+}
+
+.battery-level {
+    height: 100%;
+    background-color: rgb(13, 190, 13);
+    transition: width 0.5s;
+}
+
+.main-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap : 20px;
+    padding: 20px;
+}
+
+.video-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.video{
+    width: min(100%, 700px);
+    max-width: 700px;
+    min-width: 200px;
+}
+
+.controls-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.button {
+    width: 120px;
+    height: 60px;
+    font-size: 18px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    color: #fff;
+    margin: 10px;
+    background-color: #3279d6; 
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: #1957a8; 
+}
+
+.button:active {
+    background-color: #083d83; 
+}
+
+.shutdown-button {
+    width: auto;
+    padding: 10px 20px;
+    background-color: #4b8bdf; 
+    ; 
+}
+
+.shutdown-button:hover {
+    background-color: #e53935; 
+}
+
+.shutdown-button:active {
+    background-color: #d32f2f; 
+}

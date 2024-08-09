@@ -1,16 +1,19 @@
-from flask import render_template, request
+import os
+from flask import Flask, render_template, request, jsonify, Response
 from RoverOOP import Rover, Joint
 import cv2
 from picamera2 import Picamera2
-from flask import Flask, Response
+# from motion import Motion
 
 # Initialize the camera
 try:
     camera = Picamera2()
-    camera.preview_configuration.main.format= "RGB888"
+    camera.preview_configuration.main.format = "RGB888"
     camera.start()
+    camera_available = True
 except Exception as e:
     print("Error initializing camera:", e)
+    camera_available = False
 
 FLJ = Joint(0, 6)  # Front Left Joint
 FRJ = Joint(1, 7)  # Front Right Joint
@@ -24,6 +27,17 @@ Rover_obj = Rover(FLJ, FRJ, MLJ, MRJ, RLJ, RRJ)
 
 app = Flask(__name__)
 
+"""
+Part of the code from Antonia S.,
+its script being motion.py
+
+# Constants for calibrating the camera 
+KNOWN_WIDTH = 100
+FOCAL_LENGTH = 60
+
+motion = Motion(camera, KNOWN_WIDTH, FOCAL_LENGTH, Rover_obj)
+"""
+
 def generate_frames():
     while True:
         try:
@@ -34,64 +48,47 @@ def generate_frames():
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
         except Exception as e:
             print("Error capturing frame:", e)
+            
+def shutdown_raspberry():
+    os.system("sudo shutdown -h now")
+    return jsonify({'status': 'Raspberry Pi shutting down...'})
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-def move_forward():
-    # Code to move the robot forward
-    Rover_obj.Move_forward(90)
-    return 'Moved forward'
-
-
-def move_backward():
-    # Code to move the robot backward
-    Rover_obj.Move_backward(90)
-    return 'Moved backward'
-
-
-def move_left():
-    # Code to move the robot left
-    Rover_obj.Move_forward(45)
-    return 'Moving left'
-
-
-def move_right():
-    # Code to move the robot right
-    Rover_obj.Move_forward(135)
-    return 'Moving right'
-
-
-def stop_rover():
-    # Code to move the robot right
-    Rover_obj.Stop_rover()
-    return 'Stopped rover'
-
+    if camera_available:
+        return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    else:
+        return app.send_static_file('no_image.png')
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-
-# Move endpoint
 @app.route('/move', methods=['POST'])
 def move():
-    direction = request.args.get('direction')
+    direction = request.json.get('direction')
     if direction == 'forward':
-        return move_forward()
+        Rover_obj.Move_forward(90)
+        return jsonify({'status': 'Moved forward'})
     elif direction == 'backward':
-        return move_backward()
+        Rover_obj.Move_backward(90)
+        return jsonify({'status': 'Moved backward'})
     elif direction == 'left':
-        return move_left()
+        Rover_obj.Move_forward(45)
+        return jsonify({'status': 'Moved left'})
     elif direction == 'right':
-        return move_right()
+        Rover_obj.Move_forward(135)
+        return jsonify({'status': 'Moved right'})
     elif direction == 'stop':
-        return stop_rover()
+        Rover_obj.Stop_rover()
+        return jsonify({'status': 'Stopped rover'})
     else:
-        return 'Invalid direction'
-
+        return jsonify({'status': 'Invalid direction'})
+        
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    shutdown_raspberry()
+    return jsonify({'status': 'Shutting down Raspberry Pi'})
 
 if __name__ == '__main__':
-    Rover_obj.Move_forward(90)
     app.run('0.0.0.0', 5000, debug=False, use_reloader=False)

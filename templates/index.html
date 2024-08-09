@@ -4,83 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Robot Remote Control</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .row {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .button {
-            width: 120px;
-            height: 60px;
-            font-size: 18px;
-            position: relative;
-            bottom: 80px;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            color: #fff;
-            margin: 10px;
-            background-color: #4CAF50; /* Green */
-            transition: background-color 0.3s;
-        }
-        .button:hover {
-            background-color: #45a049; /* Darker green */
-        }
-        .button:active {
-            background-color: #3e8e41; /* Dark green */
-        }
-        .center {
-            position: relative;
-            top: 50px;
-            margin: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: none;
-            overflow: hidden;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="center">
-        <img src="{{ url_for('video_feed') }}" width="480" height="300" alt="video feed">
-    </div>
-
-    <div class="container">
-        <div class="row">
-            <button class="button" id="forwardButton" onclick="move('forward')">Forward</button>
-        </div>
-        <div class="row">
-            <button class="button" id="leftButton" onclick="move('left')">Left</button>
-            <button class="button" id="stopButton" onclick="move('stop')">Stop</button>
-            <button class="button" id="rightButton" onclick="move('right')">Right</button>
-        </div>
-        <div class="row">
-            <button class="button" id="backwardButton" onclick="move('backward')">Backward</button>
-        </div>
-    </div>
-
-   <script>
+    <link rel="stylesheet" href="../static/styles.css">
+    <script>
         function move(direction) {
-            fetch(`/move?direction=${direction}`, {
+            fetch('/move', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({direction: direction})
+            })
+            .then(response => response.json())
+            .then(data => console.log(data.status))
+            .catch(error => console.error('Error:', error));
+        }
+
+        function shutdown() {
+            fetch('/shutdown', {
                 method: 'POST'
-            });
+            })
+            .then(response => response.json())
+            .then(data => console.log(data.status))
+            .catch(error => console.error('Error:', error));
         }
     </script>
+</head>
+<body>
+    <div class="header">
+        <img src="../static/rover_logo.png" alt="Logo" class="logo">
+        <div class="header-right">
+            <button class="button shutdown-button" id="shutdownButton" onclick="shutdown()">Shut Down</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="video-container">
+            <!-- Video url with fallback image -->
+            <img src="{{ url_for('video_feed') }}" alt="video feed" class="video">
+        </div>
+
+        <div class="controls-container">
+            <div class="row">
+                <button class="button" id="forwardButton" onmousedown="move('forward')" onmouseup="move('stop')">Forward</button>
+            </div>
+            <div class="row">
+                <button class="button" id="leftButton" onmousedown="move('left')" onmouseup="move('stop')">Left</button>
+                <button class="button" id="rightButton" onmousedown="move('right')" onmouseup="move('stop')">Right</button>
+            </div>
+            <div class="row">
+                <button class="button" id="backwardButton" onmousedown="move('backward')" onmouseup="move('stop')">Backward</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
